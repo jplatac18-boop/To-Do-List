@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>To-Do List</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="app__header">
+      <h1 class="app__title">To-Do List</h1>
+      <p class="app__subtitle">
+        Gestiona tus tareas personales, laborales o académicas de forma sencilla.
+      </p>
+    </header>
+
+    <section class="app__new-task" aria-label="Crear nueva tarea">
+      <form id="task-form">
+        <label for="task-input" class="sr-only">Descripción de la tarea</label>
+        <div class="new-task__controls">
+          <input
+            type="text"
+            id="task-input"
+            name="task"
+            maxlength="200"
+            placeholder="Escribe una nueva tarea (máx. 200 caracteres)"
+            required
+          >
+          <button type="submit" class="btn btn--primary">
+            Agregar
+          </button>
+        </div>
+        <p class="new-task__hint">
+          Campo obligatorio. Máximo 200 caracteres.
+        </p>
+      </form>
+    </section>
+
+    <section class="app__stats" aria-label="Estadísticas de tareas">
+      <div class="stats">
+        <div class="stats__item">
+          <span class="stats__label">Total</span>
+          <span class="stats__value" id="stats-total">0</span>
+        </div>
+        <div class="stats__item">
+          <span class="stats__label">Completadas</span>
+          <span class="stats__value" id="stats-completed">0</span>
+        </div>
+        <div class="stats__item">
+          <span class="stats__label">Pendientes</span>
+          <span class="stats__value" id="stats-pending">0</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="app__list" aria-label="Lista de tareas">
+      <ul id="task-list" class="task-list">
+        <!-- Las tareas se agregarán aquí con JavaScript -->
+      </ul>
+      <p class="task-list__empty" id="empty-message">
+        No tienes tareas registradas. Agrega tu primera tarea.
+      </p>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
