@@ -1,0 +1,16 @@
+name: CI To-Do List
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  basic-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: List project files
+        run: ls -R
