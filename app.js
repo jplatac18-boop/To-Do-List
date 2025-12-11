@@ -1,6 +1,6 @@
 // Constantes de configuración
 const MAXIMO_CARACTERES_TAREA = 200;
-const CLAVE_STORAGE_TAREAS = "mis_tareas_app";
+const API_URL = "http://localhost:8080/api/tasks";
 
 // Representa una tarea individual
 class Tarea {
@@ -77,30 +77,61 @@ class ListaDeTareas {
   }
 }
 
-// Persistencia en LocalStorage
+// Repositorio que usa la API REST en Spring Boot
 class RepositorioTareas {
-  guardar(lista) {
-    localStorage.setItem(CLAVE_STORAGE_TAREAS, JSON.stringify(lista.tareas));
-  }
-
-  cargar() {
-    const guardadas = localStorage.getItem(CLAVE_STORAGE_TAREAS);
-    if (!guardadas) return [];
-    return JSON.parse(guardadas).map(
+  async cargar() {
+    const respuesta = await fetch(API_URL);
+    if (!respuesta.ok) {
+      throw new Error("Error al cargar tareas");
+    }
+    const datos = await respuesta.json();
+    return datos.map(
       (t) =>
         new Tarea(
-          t.id,
-          t.titulo || "Sin título",
-          t.descripcion || "",
-          t.fechaCreacion || "",
-          t.estaTerminada,
-          t.esDestacada || false
+          t.id.toString(),
+          t.description || "Sin título",
+          "", // descripción larga (solo frontend)
+          "", // fecha (solo frontend)
+          !!t.completed,
+          false
         )
     );
   }
 
-  limpiar() {
-    localStorage.removeItem(CLAVE_STORAGE_TAREAS);
+  async crearTarea(tarea) {
+    const respuesta = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: tarea.titulo }),
+    });
+    if (!respuesta.ok) {
+      throw new Error("Error al crear tarea");
+    }
+    const creada = await respuesta.json();
+    tarea.id = creada.id.toString();
+    tarea.estaTerminada = !!creada.completed;
+    return tarea;
+  }
+
+  async actualizarTarea(tarea) {
+    const respuesta = await fetch(`${API_URL}/${tarea.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        description: tarea.titulo,
+        completed: tarea.estaTerminada,
+      }),
+    });
+    if (!respuesta.ok) {
+      throw new Error("Error al actualizar tarea");
+    }
+  }
+
+  async eliminarTarea(id) {
+    const respuesta = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    if (!respuesta.ok) {
+      throw new Error("Error al eliminar tarea");
+    }
   }
 }
 
@@ -116,8 +147,13 @@ class GestorInterfaz {
     this.iniciar();
   }
 
-  iniciar() {
-    this.cargarDesdeStorage();
+  async iniciar() {
+    try {
+      await this.cargarDesdeBackend();
+    } catch (e) {
+      console.error(e);
+      alert("No se pudieron cargar las tareas del servidor.");
+    }
     this.configurarEventos();
     this.actualizarInterfaz();
   }
@@ -139,7 +175,13 @@ class GestorInterfaz {
 
     document
       .getElementById("saveTaskBtn")
-      .addEventListener("click", () => this.crearTareaDesdeModal());
+      .addEventListener("click", async () => {
+        try {
+          await this.crearTareaDesdeModal();
+        } catch (e) {
+          console.error("Error al guardar tarea:", e);
+        }
+      });
 
     // Filtros barra lateral
     document
@@ -150,14 +192,16 @@ class GestorInterfaz {
       .addEventListener("click", () => this.cambiarFiltroEstado("pending"));
     document
       .getElementById("filter-completed")
-      .addEventListener("click", () => this.cambiarFiltroEstado("completed"));
+      .addEventListener("click", () =>
+        this.cambiarFiltroEstado("completed")
+      );
     document
       .getElementById("filter-starred")
       .addEventListener("click", () => this.cambiarFiltroEstado("starred"));
   }
 
-  cargarDesdeStorage() {
-    const tareasGuardadas = this.repositorio.cargar();
+  async cargarDesdeBackend() {
+    const tareasGuardadas = await this.repositorio.cargar();
     tareasGuardadas.forEach((tarea) => this.listaDeTareas.agregarTarea(tarea));
   }
 
@@ -197,7 +241,7 @@ class GestorInterfaz {
     this.idTareaEnEdicion = null;
   }
 
-  crearTareaDesdeModal() {
+  async crearTareaDesdeModal() {
     const titulo = document.getElementById("taskTitle").value.trim();
     const descripcion = document
       .getElementById("taskDescription")
@@ -224,6 +268,7 @@ class GestorInterfaz {
         tarea.descripcion = descripcion;
         tarea.fechaCreacion =
           fecha || tarea.fechaCreacion || new Date().toISOString().split("T")[0];
+        await this.repositorio.actualizarTarea(tarea);
       }
     } else {
       // Crear nueva
@@ -234,9 +279,9 @@ class GestorInterfaz {
         fecha || new Date().toISOString().split("T")[0]
       );
       this.listaDeTareas.agregarTarea(nuevaTarea);
+      await this.repositorio.crearTarea(nuevaTarea);
     }
 
-    this.repositorio.guardar(this.listaDeTareas);
     this.actualizarInterfaz();
     this.cerrarModal();
   }
@@ -331,22 +376,31 @@ class GestorInterfaz {
     this.actualizarEstadisticas();
   }
 
-  cambiarEstadoTareaDesdeUI(idTarea) {
+  async cambiarEstadoTareaDesdeUI(idTarea) {
     this.listaDeTareas.cambiarEstadoTarea(idTarea);
-    this.repositorio.guardar(this.listaDeTareas);
+    const tarea = this.listaDeTareas.buscarTarea(idTarea);
+    try {
+      await this.repositorio.actualizarTarea(tarea);
+    } catch (e) {
+      console.error("Error al actualizar tarea:", e);
+    }
     this.dibujarTareas();
   }
 
   cambiarDestacadaDesdeUI(idTarea) {
     this.listaDeTareas.cambiarDestacadaTarea(idTarea);
-    this.repositorio.guardar(this.listaDeTareas);
+    // destacado solo existe en frontend
     this.dibujarTareas();
   }
 
-  eliminarTareaDesdeUI(idTarea) {
+  async eliminarTareaDesdeUI(idTarea) {
     if (!confirm("¿Seguro que deseas eliminar esta tarea?")) return;
     this.listaDeTareas.eliminarTarea(idTarea);
-    this.repositorio.guardar(this.listaDeTareas);
+    try {
+      await this.repositorio.eliminarTarea(idTarea);
+    } catch (e) {
+      console.error("Error al eliminar tarea:", e);
+    }
     this.actualizarInterfaz();
   }
 
