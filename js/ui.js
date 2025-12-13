@@ -1,160 +1,8 @@
-// Constantes de configuración
-const MAXIMO_CARACTERES_TAREA = 200;
-const API_URL = "http://localhost:8080/api/tasks";
-
-// Usuario actual (desde localStorage)
-const storedUser = localStorage.getItem("currentUser");
-const currentUser = storedUser ? JSON.parse(storedUser) : null;
-const CURRENT_USER_ID = currentUser ? currentUser.id : null;
-
 // Referencias para el modal de confirmación
 let taskIdToDelete = null;
 const confirmModal = document.getElementById("confirmModal");
 const cancelConfirmBtn = document.getElementById("cancelConfirmBtn");
 const acceptConfirmBtn = document.getElementById("acceptConfirmBtn");
-
-// Representa una tarea individual
-class Tarea {
-  constructor(
-    id,
-    titulo,
-    descripcion,
-    fechaCreacion,
-    estaTerminada = false,
-    esDestacada = false
-  ) {
-    this.id = id;
-    this.titulo = titulo;
-    this.descripcion = descripcion;
-    this.fechaCreacion = fechaCreacion;
-    this.estaTerminada = estaTerminada;
-    this.esDestacada = esDestacada;
-  }
-
-  cambiarEstado() {
-    this.estaTerminada = !this.estaTerminada;
-  }
-
-  cambiarDestacada() {
-    this.esDestacada = !this.esDestacada;
-  }
-
-  actualizarDescripcion(nuevaDescripcion) {
-    if (nuevaDescripcion.length <= MAXIMO_CARACTERES_TAREA) {
-      this.descripcion = nuevaDescripcion;
-      return true;
-    }
-    return false;
-  }
-}
-
-// Maneja la lista de tareas en memoria
-class ListaDeTareas {
-  constructor() {
-    this.tareas = [];
-  }
-
-  agregarTarea(tarea) {
-    this.tareas.push(tarea);
-  }
-
-  eliminarTarea(idTarea) {
-    this.tareas = this.tareas.filter((tarea) => tarea.id !== idTarea);
-  }
-
-  cambiarEstadoTarea(idTarea) {
-    const tarea = this.buscarTarea(idTarea);
-    if (tarea) {
-      tarea.cambiarEstado();
-    }
-  }
-
-  cambiarDestacadaTarea(idTarea) {
-    const tarea = this.buscarTarea(idTarea);
-    if (tarea) {
-      tarea.cambiarDestacada();
-    }
-  }
-
-  buscarTarea(idTarea) {
-    return this.tareas.find((tarea) => tarea.id === idTarea);
-  }
-
-  obtenerEstadisticas() {
-    const total = this.tareas.length;
-    const completadas = this.tareas.filter((t) => t.estaTerminada).length;
-    const pendientes = total - completadas;
-    return { total, completadas, pendientes };
-  }
-}
-
-// Repositorio que usa la API REST en Spring Boot
-class RepositorioTareas {
-  async cargar() {
-    if (!CURRENT_USER_ID) return [];
-    const respuesta = await fetch(`${API_URL}?userId=${CURRENT_USER_ID}`);
-    if (!respuesta.ok) {
-      throw new Error("Error al cargar tareas");
-    }
-    const datos = await respuesta.json();
-    return datos.map(
-      (t) =>
-        new Tarea(
-          t.id.toString(),
-          t.description || "Sin título",
-          "", // descripción larga (solo frontend)
-          "", // fecha (solo frontend)
-          !!t.completed,
-          false
-        )
-    );
-  }
-
-  async crearTarea(tarea) {
-    const body = {
-      userId: CURRENT_USER_ID,
-      description: tarea.titulo,
-      completed: tarea.estaTerminada,
-    };
-
-    const respuesta = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!respuesta.ok) {
-      throw new Error("Error al crear tarea");
-    }
-    const creada = await respuesta.json();
-    tarea.id = creada.id.toString();
-    tarea.estaTerminada = !!creada.completed;
-    return tarea;
-  }
-
-  async actualizarTarea(tarea) {
-    const body = {
-      userId: CURRENT_USER_ID,
-      description: tarea.titulo,
-      completed: tarea.estaTerminada,
-    };
-
-    const respuesta = await fetch(`${API_URL}/${tarea.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!respuesta.ok) {
-      throw new Error("Error al actualizar tarea");
-    }
-  }
-
-  async eliminarTarea(id) {
-    const respuesta = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-    if (!respuesta.ok) {
-      throw new Error("Error al eliminar tarea");
-    }
-  }
-}
 
 // Manejo de la interfaz (DOM + eventos)
 class GestorInterfaz {
@@ -213,9 +61,7 @@ class GestorInterfaz {
       .addEventListener("click", () => this.cambiarFiltroEstado("pending"));
     document
       .getElementById("filter-completed")
-      .addEventListener("click", () =>
-        this.cambiarFiltroEstado("completed")
-      );
+      .addEventListener("click", () => this.cambiarFiltroEstado("completed"));
     document
       .getElementById("filter-starred")
       .addEventListener("click", () => this.cambiarFiltroEstado("starred"));
@@ -245,7 +91,6 @@ class GestorInterfaz {
     const modalTitle = document.getElementById("modalTitle");
 
     if (tarea) {
-      // Modo edición
       this.modoEdicion = true;
       this.idTareaEnEdicion = tarea.id;
       modalTitle.textContent = "Editar tarea";
@@ -253,7 +98,6 @@ class GestorInterfaz {
       inputDescripcion.value = tarea.descripcion || "";
       inputFecha.value = tarea.fechaCreacion || "";
     } else {
-      // Nuevo
       this.modoEdicion = false;
       this.idTareaEnEdicion = null;
       modalTitle.textContent = "Nueva tarea";
@@ -272,9 +116,7 @@ class GestorInterfaz {
 
   async crearTareaDesdeModal() {
     const titulo = document.getElementById("taskTitle").value.trim();
-    const descripcion = document
-      .getElementById("taskDescription")
-      .value.trim();
+    const descripcion = document.getElementById("taskDescription").value.trim();
     const fecha = document.getElementById("taskDate").value;
 
     if (!titulo) {
@@ -283,14 +125,11 @@ class GestorInterfaz {
     }
 
     if (descripcion.length > MAXIMO_CARACTERES_TAREA) {
-      alert(
-        `La descripción supera el límite de ${MAXIMO_CARACTERES_TAREA} caracteres.`
-      );
+      alert(`La descripción supera el límite de ${MAXIMO_CARACTERES_TAREA} caracteres.`);
       return;
     }
 
     if (this.modoEdicion && this.idTareaEnEdicion) {
-      // Editar existente
       const tarea = this.listaDeTareas.buscarTarea(this.idTareaEnEdicion);
       if (tarea) {
         tarea.titulo = titulo;
@@ -300,7 +139,6 @@ class GestorInterfaz {
         await this.repositorio.actualizarTarea(tarea);
       }
     } else {
-      // Crear nueva
       const nuevaTarea = new Tarea(
         Date.now().toString(),
         titulo,
@@ -315,19 +153,16 @@ class GestorInterfaz {
     this.cerrarModal();
   }
 
-  // Filtro por texto
   filtrarTareas(texto) {
     this.filtroTextoActual = texto.toLowerCase();
     this.dibujarTareas();
   }
 
-  // Filtro por estado
   cambiarFiltroEstado(estado) {
-    this.filtroEstado = estado; // all | pending | completed | starred
+    this.filtroEstado = estado;
     this.dibujarTareas();
   }
 
-  // Dibuja las tareas en el contenedor
   dibujarTareas() {
     const contenedor = document.getElementById("tasksList");
     const termino = this.filtroTextoActual;
@@ -387,16 +222,8 @@ class GestorInterfaz {
             </span>
           </div>
         </div>
-        ${
-          tarea.descripcion
-            ? `<p class="task-description">${tarea.descripcion}</p>`
-            : ""
-        }
-        ${
-          tarea.fechaCreacion
-            ? `<p class="task-date">Creada: ${tarea.fechaCreacion}</p>`
-            : ""
-        }
+        ${tarea.descripcion ? `<p class="task-description">${tarea.descripcion}</p>` : ""}
+        ${tarea.fechaCreacion ? `<p class="task-date">Creada: ${tarea.fechaCreacion}</p>` : ""}
       </article>
     `
       )
@@ -418,11 +245,9 @@ class GestorInterfaz {
 
   cambiarDestacadaDesdeUI(idTarea) {
     this.listaDeTareas.cambiarDestacadaTarea(idTarea);
-    // destacado solo existe en frontend
     this.dibujarTareas();
   }
 
-  // Abrir modal de confirmación en lugar de confirm()
   async eliminarTareaDesdeUI(idTarea) {
     taskIdToDelete = idTarea;
     if (confirmModal) {
@@ -430,7 +255,6 @@ class GestorInterfaz {
     }
   }
 
-  // Cerrar modal de confirmación sin eliminar
   cerrarConfirmModal() {
     if (confirmModal) {
       confirmModal.classList.add("hidden");
@@ -438,7 +262,6 @@ class GestorInterfaz {
     taskIdToDelete = null;
   }
 
-  // Aceptar eliminación en el modal
   async confirmarEliminacion() {
     if (!taskIdToDelete) {
       this.cerrarConfirmModal();
@@ -463,12 +286,8 @@ class GestorInterfaz {
   }
 
   actualizarEstadisticas() {
-    const { total, completadas, pendientes } =
-      this.listaDeTareas.obtenerEstadisticas();
-
-    const destacadas = this.listaDeTareas.tareas.filter(
-      (t) => t.esDestacada
-    ).length;
+    const { total, completadas, pendientes } = this.listaDeTareas.obtenerEstadisticas();
+    const destacadas = this.listaDeTareas.tareas.filter((t) => t.esDestacada).length;
 
     document.getElementById("totalTasks").textContent = total;
     document.getElementById("pendingTasks").textContent = pendientes;
@@ -484,8 +303,3 @@ class GestorInterfaz {
     this.dibujarTareas();
   }
 }
-
-// Inicialización
-const lista = new ListaDeTareas();
-const repositorio = new RepositorioTareas();
-const gestor = new GestorInterfaz(lista, repositorio);

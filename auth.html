@@ -2,9 +2,11 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mi gestor de tareas - Acceso</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
+
   <body class="auth-body">
     <main class="auth-container">
       <section class="auth-card">
@@ -13,41 +15,50 @@
         <!-- Formulario de registro -->
         <form id="registerForm" class="auth-form">
           <h2 class="auth-subtitle">Crear cuenta</h2>
+
           <div class="auth-field">
             <label for="regName">Nombre</label>
             <input id="regName" type="text" required />
           </div>
+
           <div class="auth-field">
             <label for="regEmail">Correo</label>
             <input id="regEmail" type="email" required />
           </div>
+
           <div class="auth-field">
             <label for="regPassword">Contraseña</label>
             <input id="regPassword" type="password" required />
           </div>
+
           <button type="submit" class="btn-primary">Registrarme</button>
         </form>
 
         <!-- Formulario de inicio de sesión -->
         <form id="loginForm" class="auth-form">
           <h2 class="auth-subtitle">Iniciar sesión</h2>
+
           <div class="auth-field">
             <label for="logEmail">Correo</label>
             <input id="logEmail" type="email" required />
           </div>
+
           <div class="auth-field">
             <label for="logPassword">Contraseña</label>
             <input id="logPassword" type="password" required />
           </div>
+
           <button type="submit" class="btn-secondary">Entrar</button>
         </form>
       </section>
     </main>
 
-    <script src="src/app.js">const user = localStorage.getItem("currentUser");
-                            if (!user) {
-                                window.location.href = "auth.html";
-                    }
-</script>
+    <script>
+      // Si ya hay sesión, no mostrar login
+      const user = localStorage.getItem("currentUser");
+      if (user) window.location.href = "index.html";
+    </script>
+
+    <script src="src/auth.js"></script>
   </body>
 </html>

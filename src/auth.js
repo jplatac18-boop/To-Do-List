@@ -1,8 +1,6 @@
 // auth.js
-
 const API_BASE = "http://localhost:8080/api/auth"; // ajusta si usas otro puerto
 
-// Helpers
 function saveUserAndGoHome(data) {
   // data: { id, name, email, token }
   localStorage.setItem("currentUser", JSON.stringify(data));
