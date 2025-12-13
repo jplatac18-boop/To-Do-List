@@ -21,7 +21,7 @@ body {
 /* SIDEBAR */
 .sidebar {
   width: 240px;
-  background: #1f2937; /* más claro que #111827 */
+  background: #5585c9; /* más claro que #111827 */
   color: #e5e7eb;
   padding: 24px 18px;
   display: flex;
@@ -78,7 +78,7 @@ body {
   margin: 0 auto;
 }
 
-/* Header con buscador y botón */
+/* Header con buscador y bloque usuario+botón */
 .header {
   display: flex;
   justify-content: space-between;
@@ -102,11 +102,29 @@ body {
   color: #9ca3af;
 }
 
+/* Contenedor de saludo + botón */
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Recuadro para el "Hola, nombre" */
+.user-info {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #e0edff;        /* azul claro */
+  color: #5585c9;             /* azul intenso */
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
 /* Botón Agregar */
 .add-btn {
   border: none;
   border-radius: 999px;
-  background: #3b82f6;
+  background: #5585c9;
   color: #ffffff;
   padding: 10px 22px;
   font-size: 14px;
@@ -262,14 +280,47 @@ body {
   inset: 0;
   background: rgba(15, 23, 42, 0.45);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  justify-content: flex-end;   /* alinear a la derecha */
+  align-items: flex-end;       /* alinear abajo */
+  padding: 0 40px 40px 40px;   /* margen para que no pegue del todo al borde */
   z-index: 50;
 }
 
 .modal.hidden {
   display: none;
 }
+@media (max-width: 900px) {
+  .modal {
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+}
+ /* Variación para modal de confirmación */
+.confirm-content {
+  max-width: 360px;
+}
+
+.confirm-content h2 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.confirm-content p {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+/* Botón rojo para eliminar */
+.danger-btn {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.danger-btn:hover {
+  background: #dc2626;
+}
+
 
 .modal-content {
   background: #ffffff;
@@ -368,5 +419,186 @@ body {
   .statistics {
     flex-wrap: wrap;
     justify-content: center;
+  }
+}
+
+/* PANTALLA AUTH */
+.auth-body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f4f6ff;          /* igual que .main */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 800px;             /* similar al ancho de .main */
+  padding: 1.5rem;
+}
+
+.auth-card {
+  background: #ffffff;
+  border-radius: 12px;          /* como las tarjetas y estadísticas */
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e5e7eb;
+  padding: 2rem 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.auth-title {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  font-size: 1.6rem;
+  color: #0f172a;
+}
+
+.auth-subtitle {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: #4b5563;
+}
+
+.auth-field label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.auth-field input {
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.auth-field input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.25);
+}
+
+.btn-primary,
+.btn-secondary {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary {
+  background: #3b82f6;          /* mismo azul que .add-btn */
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.4);
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+/* Responsive auth */
+@media (max-width: 768px) {
+  .auth-card {
+    grid-template-columns: 1fr;
+  }
+}
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Recuadro saludo igual que antes */
+.user-info {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #e0edff;
+  color: #1d4ed8;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+/* Botón icono configuración */
+.user-menu-toggle {
+  border: none;
+  background: #ffffff;
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+}
+
+/* Menú desplegable */
+.user-menu {
+  position: absolute;
+  right: 0;
+  top: 115%;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+  padding: 8px 0;
+  min-width: 150px;
+  z-index: 20;
+}
+
+.user-menu.hidden {
+  display: none;
+}
+
+.user-menu button {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px 14px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+}
+
+.user-menu button:hover {
+  background: #f3f4f6;
+}
+/* Botón flotante abajo a la derecha */
+.floating-add {
+  position: fixed;
+  right: 40px;
+  bottom: 40px;
+  z-index: 30;
+}
+
+/* En móviles, un poco más centrado */
+@media (max-width: 900px) {
+  .floating-add {
+    right: 20px;
+    bottom: 20px;
   }
 }

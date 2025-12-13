@@ -2,6 +2,17 @@
 const MAXIMO_CARACTERES_TAREA = 200;
 const API_URL = "http://localhost:8080/api/tasks";
 
+// Usuario actual (desde localStorage)
+const storedUser = localStorage.getItem("currentUser");
+const currentUser = storedUser ? JSON.parse(storedUser) : null;
+const CURRENT_USER_ID = currentUser ? currentUser.id : null;
+
+// Referencias para el modal de confirmación
+let taskIdToDelete = null;
+const confirmModal = document.getElementById("confirmModal");
+const cancelConfirmBtn = document.getElementById("cancelConfirmBtn");
+const acceptConfirmBtn = document.getElementById("acceptConfirmBtn");
+
 // Representa una tarea individual
 class Tarea {
   constructor(
@@ -80,7 +91,8 @@ class ListaDeTareas {
 // Repositorio que usa la API REST en Spring Boot
 class RepositorioTareas {
   async cargar() {
-    const respuesta = await fetch(API_URL);
+    if (!CURRENT_USER_ID) return [];
+    const respuesta = await fetch(`${API_URL}?userId=${CURRENT_USER_ID}`);
     if (!respuesta.ok) {
       throw new Error("Error al cargar tareas");
     }
@@ -99,10 +111,16 @@ class RepositorioTareas {
   }
 
   async crearTarea(tarea) {
+    const body = {
+      userId: CURRENT_USER_ID,
+      description: tarea.titulo,
+      completed: tarea.estaTerminada,
+    };
+
     const respuesta = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: tarea.titulo }),
+      body: JSON.stringify(body),
     });
     if (!respuesta.ok) {
       throw new Error("Error al crear tarea");
@@ -114,13 +132,16 @@ class RepositorioTareas {
   }
 
   async actualizarTarea(tarea) {
+    const body = {
+      userId: CURRENT_USER_ID,
+      description: tarea.titulo,
+      completed: tarea.estaTerminada,
+    };
+
     const respuesta = await fetch(`${API_URL}/${tarea.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        description: tarea.titulo,
-        completed: tarea.estaTerminada,
-      }),
+      body: JSON.stringify(body),
     });
     if (!respuesta.ok) {
       throw new Error("Error al actualizar tarea");
@@ -198,6 +219,14 @@ class GestorInterfaz {
     document
       .getElementById("filter-starred")
       .addEventListener("click", () => this.cambiarFiltroEstado("starred"));
+
+    // Eventos del modal de confirmación
+    if (cancelConfirmBtn) {
+      cancelConfirmBtn.addEventListener("click", () => this.cerrarConfirmModal());
+    }
+    if (acceptConfirmBtn) {
+      acceptConfirmBtn.addEventListener("click", () => this.confirmarEliminacion());
+    }
   }
 
   async cargarDesdeBackend() {
@@ -205,7 +234,7 @@ class GestorInterfaz {
     tareasGuardadas.forEach((tarea) => this.listaDeTareas.agregarTarea(tarea));
   }
 
-  // Modal
+  // Modal de tarea
   abrirModal(tarea = null) {
     const modal = document.getElementById("taskModal");
     modal.classList.remove("hidden");
@@ -393,8 +422,30 @@ class GestorInterfaz {
     this.dibujarTareas();
   }
 
+  // Abrir modal de confirmación en lugar de confirm()
   async eliminarTareaDesdeUI(idTarea) {
-    if (!confirm("¿Seguro que deseas eliminar esta tarea?")) return;
+    taskIdToDelete = idTarea;
+    if (confirmModal) {
+      confirmModal.classList.remove("hidden");
+    }
+  }
+
+  // Cerrar modal de confirmación sin eliminar
+  cerrarConfirmModal() {
+    if (confirmModal) {
+      confirmModal.classList.add("hidden");
+    }
+    taskIdToDelete = null;
+  }
+
+  // Aceptar eliminación en el modal
+  async confirmarEliminacion() {
+    if (!taskIdToDelete) {
+      this.cerrarConfirmModal();
+      return;
+    }
+
+    const idTarea = taskIdToDelete;
     this.listaDeTareas.eliminarTarea(idTarea);
     try {
       await this.repositorio.eliminarTarea(idTarea);
@@ -402,6 +453,7 @@ class GestorInterfaz {
       console.error("Error al eliminar tarea:", e);
     }
     this.actualizarInterfaz();
+    this.cerrarConfirmModal();
   }
 
   editarTareaDesdeUI(idTarea) {
