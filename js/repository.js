@@ -10,7 +10,7 @@ class RepositorioTareas {
     return datos.map(
       (t) =>
         new Tarea(
-          t.id.toString(),
+          t.id?.toString(),
           t.description || "Sin título",
           t.longDescription || "",
           t.startDate || "",

@@ -233,12 +233,6 @@ class GestorInterfaz {
             ${tarea.titulo}
           </h3>
           <div class="task-actions">
-            <span
-              class="icon-star ${tarea.esDestacada ? "" : "inactive"}"
-              title="Destacar"
-              onclick="gestor.cambiarDestacadaDesdeUI('${tarea.id}')"
-            >
-              ★
             </span>
             <span
               class="icon-edit"
