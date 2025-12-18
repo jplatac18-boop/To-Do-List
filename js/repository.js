@@ -12,10 +12,11 @@ class RepositorioTareas {
         new Tarea(
           t.id.toString(),
           t.description || "Sin título",
-          "", // descripción larga (solo frontend)
-          "", // fecha (solo frontend)
+          t.longDescription || "",
+          t.startDate || "",
+          t.endDate || "",
           !!t.completed,
-          false
+          !!t.starred
         )
     );
   }
@@ -24,7 +25,11 @@ class RepositorioTareas {
     const body = {
       userId: CURRENT_USER_ID,
       description: tarea.titulo,
+      longDescription: tarea.descripcion,
       completed: tarea.estaTerminada,
+      startDate: tarea.fechaInicio,
+      endDate: tarea.fechaFin,
+      starred: tarea.esDestacada,
     };
 
     const respuesta = await fetch(API_URL, {
@@ -38,6 +43,9 @@ class RepositorioTareas {
     const creada = await respuesta.json();
     tarea.id = creada.id.toString();
     tarea.estaTerminada = !!creada.completed;
+    tarea.fechaInicio = creada.startDate || tarea.fechaInicio;
+    tarea.fechaFin = creada.endDate || tarea.fechaFin;
+    tarea.esDestacada = !!creada.starred;
     return tarea;
   }
 
@@ -45,7 +53,11 @@ class RepositorioTareas {
     const body = {
       userId: CURRENT_USER_ID,
       description: tarea.titulo,
+      longDescription: tarea.descripcion,
       completed: tarea.estaTerminada,
+      startDate: tarea.fechaInicio,
+      endDate: tarea.fechaFin,
+      starred: tarea.esDestacada,
     };
 
     const respuesta = await fetch(`${API_URL}/${tarea.id}`, {

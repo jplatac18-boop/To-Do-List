@@ -87,3 +87,27 @@ if (loginForm) {
     }
   });
 }
+document.addEventListener("DOMContentLoaded", () => {
+  const tabs = document.querySelectorAll(".auth-tab");
+  const forms = document.querySelectorAll(".auth-form");
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.target; // "login" o "signup"
+
+      // Cambiar tab activa
+      tabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+
+      // Mostrar solo el formulario correspondiente
+      forms.forEach((form) => {
+        if (form.dataset.form === target) {
+          form.classList.add("auth-form-active");
+        } else {
+          form.classList.remove("auth-form-active");
+        }
+      });
+    });
+  });
+});
+

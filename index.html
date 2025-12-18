@@ -1,179 +1,124 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mi gestor de tareas</title>
-  <link rel="stylesheet" href="css/style.css" />
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mi gestor de tareas</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
 
-<body>
-  <div class="container">
-    <!-- Barra lateral -->
-    <aside class="sidebar">
-      <h2>Mis listas</h2>
-      <ul>
-        <li id="filter-all">
-          Todos los pendientes
-          <span id="count-all">0</span>
-        </li>
-        <li id="filter-pending">
-          Solo pendientes
-          <span id="count-pending">0</span>
-        </li>
-        <li id="filter-completed">
-          Terminadas
-          <span id="count-completed">0</span>
-        </li>
-        <li id="filter-starred">
-          Destacadas
-          <span id="count-starred">0</span>
-        </li>
-      </ul>
-    </aside>
+  <body>
+    <div class="container">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <h2>Categorías</h2>
+        <ul id="filters">
+          <li data-filter="all">
+            Todas las tareas
+            <span id="count-all">0</span>
+          </li>
+          <li data-filter="pending">
+            Pendientes
+            <span id="count-pending">0</span>
+          </li>
+          <li data-filter="completed">
+            Terminadas
+            <span id="count-completed">0</span>
+          </li>
+          <li data-filter="starred">
+            Destacadas
+            <span id="count-starred">0</span>
+          </li>
+        </ul>
 
-    <!-- Área principal -->
-    <main class="main">
-      <header class="header">
-        <input
-          type="text"
-          id="searchInput"
-          class="search"
-          placeholder="Filtra tus tareas por nombre..."
-        />
-
-        <!-- Bloque usuario + menú + botón agregar -->
-        <div class="user-header">
-          <div class="user-chip">
-            <span id="userName" class="user-info"></span>
-            <button id="userMenuToggle" class="user-menu-toggle" type="button">⚙</button>
-
-            <div id="userMenu" class="user-menu hidden">
-              <button id="logoutBtn" type="button">Cerrar sesión</button>
+        <!-- Bloque usuario abajo en el sidebar -->
+        <div class="sidebar-user">
+          <div class="user-header">
+            <div class="user-chip">
+              <div class="user-info" id="userGreeting">Hola</div>
+              <button class="user-menu-toggle" id="userMenuToggle">⚙</button>
+              <div class="user-menu hidden" id="userMenu">
+                <button id="logoutBtn">Cerrar sesión</button>
+              </div>
             </div>
           </div>
-
-          <button id="addBtn" class="add-btn floating-add" type="button">
-            Agregar tarea
-          </button>
         </div>
-      </header>
+      </aside>
 
-      <!-- Lista de tareas -->
-      <section id="tasksList" class="tasks-list">
-        <!-- Las tarjetas de tareas se dibujan desde js/ui.js -->
+      <!-- MAIN -->
+      <main class="main">
+        <!-- Header solo con buscador -->
+        <header class="header">
+          <input
+            type="text"
+            id="searchInput"
+            class="search"
+            placeholder="Filtra tus tareas por nombre..."
+          />
+        </header>
+
+        <!-- Lista de tareas -->
+        <section class="tasks-list" id="tasksList"></section>
+      </main>
+
+      <!-- Botón flotante agregar -->
+      <button class="floating-add add-btn" id="addTaskBtn">
+        Agregar tarea
+      </button>
+
+      <!-- Modal de crear/editar tarea -->
+      <section class="modal hidden" id="taskModal">
+        <div class="modal-content">
+          <h2 id="modalTitle">Nueva tarea</h2>
+
+          <label>
+            Título
+            <input type="text" id="taskTitleInput" />
+          </label>
+
+          <label>
+            Descripción
+            <textarea id="taskDescriptionInput"></textarea>
+          </label>
+
+          <label>
+            Fecha inicio
+            <input type="date" id="taskStartDateInput" />
+          </label>
+
+          <label>
+            Fecha fin
+            <input type="date" id="taskEndDateInput" />
+          </label>
+
+          <label>
+            Destacada
+            <input type="checkbox" id="taskStarredInput" />
+          </label>
+
+          <div class="modal-actions">
+            <button id="cancelModalBtn">Cancelar</button>
+            <button id="saveTaskBtn">Guardar tarea</button>
+          </div>
+        </div>
       </section>
 
-      <!-- Estadísticas inferiores -->
-      <section class="statistics" id="stats">
-        <div class="stats-item">
-          <span class="stats-label">Total:</span>
-          <span class="stats-number" id="totalTasks">0</span>
-        </div>
-
-        <div class="stats-item">
-          <span class="stats-label">Pendientes:</span>
-          <span class="stats-number" id="pendingTasks">0</span>
-        </div>
-
-        <div class="stats-item">
-          <span class="stats-label">Completadas:</span>
-          <span class="stats-number" id="completedTasks">0</span>
+      <!-- Modal de confirmación de eliminación -->
+      <section class="modal hidden" id="confirmModal">
+        <div class="modal-content confirm-content">
+          <h2>Eliminar tarea</h2>
+          <p>¿Seguro que deseas eliminar esta tarea?</p>
+          <div class="modal-actions">
+            <button id="cancelConfirmBtn">Cancelar</button>
+            <button id="acceptConfirmBtn" class="danger-btn">Eliminar</button>
+          </div>
         </div>
       </section>
-    </main>
-  </div>
-
-  <!-- Modal para nueva / editar tarea -->
-  <div id="taskModal" class="modal hidden">
-    <div class="modal-content">
-      <h2 id="modalTitle">Nueva tarea</h2>
-
-      <label>
-        Título:
-        <input type="text" id="taskTitle" maxlength="100" />
-      </label>
-
-      <label>
-        Descripción:
-        <textarea id="taskDescription" maxlength="200"></textarea>
-      </label>
-
-      <label>
-        Fecha de creación:
-        <input type="date" id="taskDate" />
-      </label>
-
-      <div class="modal-actions">
-        <button id="cancelModalBtn" type="button">Cancelar</button>
-        <button id="saveTaskBtn" type="button">Guardar</button>
-      </div>
     </div>
-  </div>
 
-  <!-- Modal de confirmación de eliminación -->
-  <div id="confirmModal" class="modal hidden">
-    <div class="modal-content confirm-content">
-      <h2>Eliminar tarea</h2>
-      <p>¿Seguro que deseas eliminar esta tarea?</p>
-
-      <div class="modal-actions">
-        <button id="cancelConfirmBtn" type="button">Cancelar</button>
-        <button id="acceptConfirmBtn" type="button" class="danger-btn">
-          Eliminar
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Script de protección, saludo y menú usuario (en bloque para no contaminar global) -->
-  <script>
-  {
-    // Proteger la ruta: si no hay usuario, mandar a login
-    const storedUser = localStorage.getItem("currentUser");
-    if (!storedUser) {
-      window.location.href = "auth.html";
-    } else {
-      const currentUser = JSON.parse(storedUser);
-      const userNameSpan = document.getElementById("userName");
-      if (userNameSpan && currentUser.name) {
-        userNameSpan.textContent = `Hola, ${currentUser.name}`;
-      }
-    }
-
-    // Menú de usuario
-    const userMenuToggle = document.getElementById("userMenuToggle");
-    const userMenu = document.getElementById("userMenu");
-
-    if (userMenuToggle && userMenu) {
-      userMenuToggle.addEventListener("click", () => {
-        userMenu.classList.toggle("hidden");
-      });
-
-      // Cerrar menú al hacer clic fuera
-      document.addEventListener("click", (e) => {
-        if (!userMenu.contains(e.target) && !userMenuToggle.contains(e.target)) {
-          userMenu.classList.add("hidden");
-        }
-      });
-    }
-
-    // Cerrar sesión
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => {
-        localStorage.removeItem("currentUser");
-        window.location.href = "auth.html";
-      });
-    }
-  }
-  </script>
-
-  <!-- Módulos (orden importante) -->
-  <script src="js/config.js"></script>
-  <script src="js/domain.js"></script>
-  <script src="js/repository.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/main.js"></script>
-</body>
+    <script src="js/config.js"></script>
+    <script src="js/domain.js"></script>
+    <script src="js/repository.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+  </body>
 </html>

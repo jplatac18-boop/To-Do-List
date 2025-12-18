@@ -8,57 +8,57 @@
   </head>
 
   <body class="auth-body">
-    <main class="auth-container">
-      <section class="auth-card">
-        <h1 class="auth-title">Bienvenido</h1>
+  <main class="auth-container">
+    <section class="auth-card auth-card-single">
+      <h1 class="auth-title">Mi gestor de tareas</h1>
 
-        <!-- Formulario de registro -->
-        <form id="registerForm" class="auth-form">
-          <h2 class="auth-subtitle">Crear cuenta</h2>
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-target="login">Iniciar sesión</button>
+        <button class="auth-tab" data-target="signup">Registrarme</button>
+      </div>
 
-          <div class="auth-field">
-            <label for="regName">Nombre</label>
-            <input id="regName" type="text" required />
-          </div>
+      <!-- Formulario login -->
+      <form id="loginForm" class="auth-form auth-form-active" data-form="login">
+        <div class="auth-field">
+          <label for="logEmail">Correo</label>
+          <input id="logEmail" type="email" required />
+        </div>
 
-          <div class="auth-field">
-            <label for="regEmail">Correo</label>
-            <input id="regEmail" type="email" required />
-          </div>
+        <div class="auth-field">
+          <label for="logPassword">Contraseña</label>
+          <input id="logPassword" type="password" required />
+        </div>
 
-          <div class="auth-field">
-            <label for="regPassword">Contraseña</label>
-            <input id="regPassword" type="password" required />
-          </div>
+        <button type="submit" class="btn-primary">Entrar</button>
+      </form>
 
-          <button type="submit" class="btn-primary">Registrarme</button>
-        </form>
+      <!-- Formulario registro -->
+      <form id="registerForm" class="auth-form" data-form="signup">
+        <div class="auth-field">
+          <label for="regName">Nombre</label>
+          <input id="regName" type="text" required />
+        </div>
 
-        <!-- Formulario de inicio de sesión -->
-        <form id="loginForm" class="auth-form">
-          <h2 class="auth-subtitle">Iniciar sesión</h2>
+        <div class="auth-field">
+          <label for="regEmail">Correo</label>
+          <input id="regEmail" type="email" required />
+        </div>
 
-          <div class="auth-field">
-            <label for="logEmail">Correo</label>
-            <input id="logEmail" type="email" required />
-          </div>
+        <div class="auth-field">
+          <label for="regPassword">Contraseña</label>
+          <input id="regPassword" type="password" required />
+        </div>
 
-          <div class="auth-field">
-            <label for="logPassword">Contraseña</label>
-            <input id="logPassword" type="password" required />
-          </div>
+        <button type="submit" class="btn-primary">Registrarme</button>
+      </form>
+    </section>
+  </main>
 
-          <button type="submit" class="btn-secondary">Entrar</button>
-        </form>
-      </section>
-    </main>
-
-    <script>
-      // Si ya hay sesión, no mostrar login
-      const user = localStorage.getItem("currentUser");
-      if (user) window.location.href = "index.html";
-    </script>
-
-    <script src="src/auth.js"></script>
-  </body>
+  <script>
+    const user = localStorage.getItem("currentUser");
+    if (user) window.location.href = "index.html";
+  </script>
+  <script src="src/auth.js"></script>
+</body>
 </html>

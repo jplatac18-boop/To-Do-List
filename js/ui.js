@@ -1,3 +1,5 @@
+// ui.js
+
 // Referencias para el modal de confirmación
 let taskIdToDelete = null;
 const confirmModal = document.getElementById("confirmModal");
@@ -28,43 +30,45 @@ class GestorInterfaz {
   }
 
   configurarEventos() {
-    document
-      .getElementById("addBtn")
-      .addEventListener("click", () => this.abrirModal());
+    // Botón agregar (botón flotante)
+    const addBtn = document.getElementById("addTaskBtn");
+    if (addBtn) {
+      addBtn.addEventListener("click", () => this.abrirModal());
+    }
 
-    document
-      .getElementById("searchInput")
-      .addEventListener("input", (evento) =>
+    const searchInput = document.getElementById("searchInput");
+    if (searchInput) {
+      searchInput.addEventListener("input", (evento) =>
         this.filtrarTareas(evento.target.value)
       );
+    }
 
-    document
-      .getElementById("cancelModalBtn")
-      .addEventListener("click", () => this.cerrarModal());
+    const cancelModalBtn = document.getElementById("cancelModalBtn");
+    if (cancelModalBtn) {
+      cancelModalBtn.addEventListener("click", () => this.cerrarModal());
+    }
 
-    document
-      .getElementById("saveTaskBtn")
-      .addEventListener("click", async () => {
+    const saveTaskBtn = document.getElementById("saveTaskBtn");
+    if (saveTaskBtn) {
+      saveTaskBtn.addEventListener("click", async () => {
         try {
           await this.crearTareaDesdeModal();
         } catch (e) {
           console.error("Error al guardar tarea:", e);
         }
       });
+    }
 
-    // Filtros barra lateral
-    document
-      .getElementById("filter-all")
-      .addEventListener("click", () => this.cambiarFiltroEstado("all"));
-    document
-      .getElementById("filter-pending")
-      .addEventListener("click", () => this.cambiarFiltroEstado("pending"));
-    document
-      .getElementById("filter-completed")
-      .addEventListener("click", () => this.cambiarFiltroEstado("completed"));
-    document
-      .getElementById("filter-starred")
-      .addEventListener("click", () => this.cambiarFiltroEstado("starred"));
+    // Filtros barra lateral por data-filter
+    const filterAll = document.querySelector('li[data-filter="all"]');
+    const filterPending = document.querySelector('li[data-filter="pending"]');
+    const filterCompleted = document.querySelector('li[data-filter="completed"]');
+    const filterStarred = document.querySelector('li[data-filter="starred"]');
+
+    if (filterAll) filterAll.addEventListener("click", () => this.cambiarFiltroEstado("all"));
+    if (filterPending) filterPending.addEventListener("click", () => this.cambiarFiltroEstado("pending"));
+    if (filterCompleted) filterCompleted.addEventListener("click", () => this.cambiarFiltroEstado("completed"));
+    if (filterStarred) filterStarred.addEventListener("click", () => this.cambiarFiltroEstado("starred"));
 
     // Eventos del modal de confirmación
     if (cancelConfirmBtn) {
@@ -85,10 +89,12 @@ class GestorInterfaz {
     const modal = document.getElementById("taskModal");
     modal.classList.remove("hidden");
 
-    const inputTitulo = document.getElementById("taskTitle");
-    const inputDescripcion = document.getElementById("taskDescription");
-    const inputFecha = document.getElementById("taskDate");
+    const inputTitulo = document.getElementById("taskTitleInput");
+    const inputDescripcion = document.getElementById("taskDescriptionInput");
+    const inputInicio = document.getElementById("taskStartDateInput");
+    const inputFin = document.getElementById("taskEndDateInput");
     const modalTitle = document.getElementById("modalTitle");
+    const starredInput = document.getElementById("taskStarredInput");
 
     if (tarea) {
       this.modoEdicion = true;
@@ -96,14 +102,18 @@ class GestorInterfaz {
       modalTitle.textContent = "Editar tarea";
       inputTitulo.value = tarea.titulo;
       inputDescripcion.value = tarea.descripcion || "";
-      inputFecha.value = tarea.fechaCreacion || "";
+      if (inputInicio) inputInicio.value = tarea.fechaInicio || "";
+      if (inputFin) inputFin.value = tarea.fechaFin || "";
+      if (starredInput) starredInput.checked = !!tarea.esDestacada;
     } else {
       this.modoEdicion = false;
       this.idTareaEnEdicion = null;
       modalTitle.textContent = "Nueva tarea";
       inputTitulo.value = "";
       inputDescripcion.value = "";
-      inputFecha.valueAsDate = new Date();
+      if (inputInicio) inputInicio.valueAsDate = new Date();
+      if (inputFin) inputFin.value = "";
+      if (starredInput) starredInput.checked = false;
     }
   }
 
@@ -115,9 +125,17 @@ class GestorInterfaz {
   }
 
   async crearTareaDesdeModal() {
-    const titulo = document.getElementById("taskTitle").value.trim();
-    const descripcion = document.getElementById("taskDescription").value.trim();
-    const fecha = document.getElementById("taskDate").value;
+    const titulo = document.getElementById("taskTitleInput").value.trim();
+    const descripcion = document
+      .getElementById("taskDescriptionInput")
+      .value.trim();
+    const inputInicio = document.getElementById("taskStartDateInput");
+    const inputFin = document.getElementById("taskEndDateInput");
+    const starredInput = document.getElementById("taskStarredInput");
+
+    const fechaInicio = inputInicio ? inputInicio.value : "";
+    const fechaFin = inputFin ? inputFin.value : "";
+    const esDestacada = starredInput ? starredInput.checked : false;
 
     if (!titulo) {
       alert("El título no puede estar vacío.");
@@ -125,7 +143,19 @@ class GestorInterfaz {
     }
 
     if (descripcion.length > MAXIMO_CARACTERES_TAREA) {
-      alert(`La descripción supera el límite de ${MAXIMO_CARACTERES_TAREA} caracteres.`);
+      alert(
+        `La descripción supera el límite de ${MAXIMO_CARACTERES_TAREA} caracteres.`
+      );
+      return;
+    }
+
+    if (!fechaInicio) {
+      alert("Selecciona una fecha de inicio.");
+      return;
+    }
+
+    if (fechaFin && fechaFin < fechaInicio) {
+      alert("La fecha fin no puede ser anterior a la fecha inicio.");
       return;
     }
 
@@ -134,8 +164,9 @@ class GestorInterfaz {
       if (tarea) {
         tarea.titulo = titulo;
         tarea.descripcion = descripcion;
-        tarea.fechaCreacion =
-          fecha || tarea.fechaCreacion || new Date().toISOString().split("T")[0];
+        tarea.fechaInicio = fechaInicio;
+        tarea.fechaFin = fechaFin;
+        tarea.esDestacada = esDestacada;
         await this.repositorio.actualizarTarea(tarea);
       }
     } else {
@@ -143,7 +174,10 @@ class GestorInterfaz {
         Date.now().toString(),
         titulo,
         descripcion,
-        fecha || new Date().toISOString().split("T")[0]
+        fechaInicio,
+        fechaFin,
+        false,
+        esDestacada
       );
       this.listaDeTareas.agregarTarea(nuevaTarea);
       await this.repositorio.crearTarea(nuevaTarea);
@@ -222,8 +256,19 @@ class GestorInterfaz {
             </span>
           </div>
         </div>
-        ${tarea.descripcion ? `<p class="task-description">${tarea.descripcion}</p>` : ""}
-        ${tarea.fechaCreacion ? `<p class="task-date">Creada: ${tarea.fechaCreacion}</p>` : ""}
+        ${
+          tarea.descripcion
+            ? `<p class="task-description">${tarea.descripcion}</p>`
+            : ""
+        }
+        ${
+          tarea.fechaInicio || tarea.fechaFin
+            ? `<p class="task-date">
+                 ${tarea.fechaInicio ? `Inicio: ${tarea.fechaInicio}` : ""}
+                 ${tarea.fechaFin ? ` | Fin: ${tarea.fechaFin}` : ""}
+               </p>`
+            : ""
+        }
       </article>
     `
       )
@@ -249,6 +294,7 @@ class GestorInterfaz {
   }
 
   async eliminarTareaDesdeUI(idTarea) {
+    // Mostrar modal de confirmación
     taskIdToDelete = idTarea;
     if (confirmModal) {
       confirmModal.classList.remove("hidden");
@@ -286,20 +332,63 @@ class GestorInterfaz {
   }
 
   actualizarEstadisticas() {
-    const { total, completadas, pendientes } = this.listaDeTareas.obtenerEstadisticas();
-    const destacadas = this.listaDeTareas.tareas.filter((t) => t.esDestacada).length;
+    const { total, completadas, pendientes } =
+      this.listaDeTareas.obtenerEstadisticas();
+    const destacadas = this.listaDeTareas.tareas.filter(
+      (t) => t.esDestacada
+    ).length;
 
-    document.getElementById("totalTasks").textContent = total;
-    document.getElementById("pendingTasks").textContent = pendientes;
-    document.getElementById("completedTasks").textContent = completadas;
+    const statTotal = document.getElementById("stat-total");
+    const statPending = document.getElementById("stat-pending");
+    const statCompleted = document.getElementById("stat-completed");
+    const countAll = document.getElementById("count-all");
+    const countPending = document.getElementById("count-pending");
+    const countCompleted = document.getElementById("count-completed");
+    const countStarred = document.getElementById("count-starred");
 
-    document.getElementById("count-all").textContent = total;
-    document.getElementById("count-pending").textContent = pendientes;
-    document.getElementById("count-completed").textContent = completadas;
-    document.getElementById("count-starred").textContent = destacadas;
+    if (statTotal) statTotal.textContent = total;
+    if (statPending) statPending.textContent = pendientes;
+    if (statCompleted) statCompleted.textContent = completadas;
+
+    if (countAll) countAll.textContent = total;
+    if (countPending) countPending.textContent = pendientes;
+    if (countCompleted) countCompleted.textContent = completadas;
+    if (countStarred) countStarred.textContent = destacadas;
   }
 
   actualizarInterfaz() {
     this.dibujarTareas();
   }
 }
+
+// Saludo y menú usuario en sidebar
+document.addEventListener("DOMContentLoaded", () => {
+  const raw = localStorage.getItem("currentUser");
+  const saludoEl = document.getElementById("userGreeting");
+  const menuToggle = document.getElementById("userMenuToggle");
+  const menu = document.getElementById("userMenu");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (raw && saludoEl) {
+    try {
+      const user = JSON.parse(raw);
+      const nombre = user.name || user.nombre || "";
+      saludoEl.textContent = nombre ? `Hola, ${nombre}` : "Hola";
+    } catch (e) {
+      console.error("Error parseando currentUser:", e);
+    }
+  }
+
+  if (menuToggle && menu) {
+    menuToggle.addEventListener("click", () => {
+      menu.classList.toggle("hidden");
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("currentUser");
+      window.location.href = "auth.html";
+    });
+  }
+});

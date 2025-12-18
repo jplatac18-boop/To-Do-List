@@ -4,14 +4,16 @@ class Tarea {
     id,
     titulo,
     descripcion,
-    fechaCreacion,
+    fechaInicio,
+    fechaFin,
     estaTerminada = false,
     esDestacada = false
   ) {
     this.id = id;
     this.titulo = titulo;
     this.descripcion = descripcion;
-    this.fechaCreacion = fechaCreacion;
+    this.fechaInicio = fechaInicio; // YYYY-MM-DD
+    this.fechaFin = fechaFin;       // YYYY-MM-DD
     this.estaTerminada = estaTerminada;
     this.esDestacada = esDestacada;
   }

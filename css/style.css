@@ -428,7 +428,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f4f6ff;          /* igual que .main */
+  background: #5585c9;          /* igual que .main */
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -506,12 +506,12 @@ body {
 }
 
 .btn-secondary {
-  background: #e5e7eb;
-  color: #111827;
+  background: #3b82f6;
+  color: #ffffff;
 }
 
 .btn-secondary:hover {
-  background: #d1d5db;
+  background: #1d4ed8;
 }
 
 /* Responsive auth */
@@ -559,8 +559,8 @@ body {
 /* Menú desplegable */
 .user-menu {
   position: absolute;
-  right: 0;
-  top: 115%;
+  right: -50%;
+  bottom: 115%;      /* se coloca encima del botón */
   background: #ffffff;
   border-radius: 10px;
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
@@ -602,3 +602,112 @@ body {
     bottom: 20px;
   }
 }
+/* Card única para auth con tabs */
+.auth-card-single {
+  max-width: 380px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Tabs */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  background: #eef2ff;
+  border-radius: 999px;
+  padding: 3px;
+  margin-bottom: 0.5rem;
+}
+
+.auth-tab {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #4b5563;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth-tab.active {
+  background: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
+}
+
+/* Formularios: solo uno visible */
+.auth-form {
+  display: none;
+  display: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auth-form-active {
+  display: flex;
+}
+/* Card única centrada */
+.auth-card-single {
+  max-width: 380px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Tabs */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  background: #eef2ff;
+  border-radius: 999px;
+  padding: 3px;
+  margin-bottom: 0.5rem;
+}
+
+.auth-tab {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #4b5563;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth-tab.active {
+  background: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
+}
+
+/* Formularios: por defecto ocultos */
+.auth-form {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Solo el formulario activo se muestra */
+.auth-form-active {
+  display: flex;
+}
+.sidebar {
+  width: 240px;
+  background: #5585c9;
+  color: #e5e7eb;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-user {
+  margin-top: auto;
+}
+
